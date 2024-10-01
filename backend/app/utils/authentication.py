@@ -110,7 +110,7 @@ def get_istio_auth_session(url: str, username: str, password: str) -> Authentica
             if resp.status_code != 200:
                 raise RuntimeError(f"HTTP status code '{resp.status_code}' for POST against: {url_obj.geturl()}")
 
-        # store the session cookies in a "key1=value1; key2=value2" string
+        # store the session cookies in a "key1=value1; key2=value2" string.
         auth_session["session_cookie"] = "; ".join([f"{c.name}={c.value}" for c in s.cookies])
 
     return AuthenticationSessionSchema(**auth_session)
