@@ -1,31 +1,20 @@
-from config.settings import get_settings
-from core.kubeflow_manager import KubeflowManager
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from routers import api_router
 
 app = FastAPI()
 
-settings = get_settings()
+# CORS 설정
+origins = [
+    "*",  # 모든 출처 허용
+]
 
-print(f"{settings.KUBEFLOW_ENDPOINT}")
-
-
-kf = KubeflowManager(
-    endpoint=settings.KUBEFLOW_ENDPOINT,
-    username=settings.KUBEFLOW_USERNAME,
-    password=settings.KUBEFLOW_PASSWORD,
-    namespace=settings.KUBEFLOW_NAMESPACE,
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-client = kf.get_kfp_client()
-print(client.get_kfp_healthz())
-# print(client.get_experiment(namespace=settings.KUBEFLOW_NAMESPACE, experiment_name='aipaas-ml-workflow'))
-# print(client._context_setting)
-# print(client.list_experiments())
-# print(client.list_runs())
-# print(client.list_pipelines())
-# print(client.list_recurring_runs(experiment_id='cb702f34-3347-4973-9c94-472fc68520bf'))
-# 실험 가져오기 또는 생성
-
-
-# client.delete_experiment(experiment_id='910813c5-fa59-4e65-b5b5-6864a1305313')
-# experiment = client.create_experiment(name='test-ml-workflow', namespace=settings.KUBEFLOW_NAMESPACE)
+app.include_router(api_router)
