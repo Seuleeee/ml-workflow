@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 
 
+# TODO: 작업 세분화 필요.
 @router.post("/all-step")
 def all_step():
     print(f"{settings.KUBEFLOW_ENDPOINT}")

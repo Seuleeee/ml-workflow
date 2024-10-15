@@ -7,22 +7,43 @@ from schemas.authentication import AuthenticationSessionSchema
 
 def get_istio_auth_session(url: str, username: str, password: str) -> AuthenticationSessionSchema:
     """
-    Determine if the specified URL is secured by Dex and try to obtain a session cookie.
-    WARNING: only Dex `staticPasswords` and `LDAP` authentication are currently supported
-             (we default default to using `staticPasswords` if both are enabled)
+    Authenticate against a Dex-secured Istio endpoint and obtain a session cookie.
 
-    :param url: Kubeflow server URL, including protocol
-    :param username: Dex `staticPasswords` or `LDAP` username
-    :param password: Dex `staticPasswords` or `LDAP` password
-    :return: auth session information
+    This function performs the following steps:
+    1. Checks if the provided URL is secured.
+    2. If secured, navigates through the Dex authentication process.
+    3. Attempts to log in using the provided credentials.
+    4. Handles any necessary approval steps.
+    5. Retrieves and returns the session cookie upon successful authentication.
+
+    Args:
+        url (str): The Istio endpoint URL, including the protocol (e.g., "https://example.com").
+        username (str): The username for Dex authentication.
+        password (str): The password corresponding to the provided username.
+
+    Returns:
+        AuthenticationSessionSchema: An object containing authentication session information:
+            - endpoint_url (str): The original Istio endpoint URL.
+            - redirect_url (str | None): The URL after any redirects, if applicable.
+            - dex_login_url (str | None): The Dex login URL used for credential submission.
+            - is_secured (bool | None): Indicates whether the endpoint is secured.
+            - session_cookie (str | None): The resulting session cookie string if authentication is successful.
+
+    Raises:
+        RuntimeError: If there are issues with HTTP responses, redirects, or the login process.
+
+    Note:
+        - This function supports 'staticPasswords' authentication methods.
+        - The function uses a requests.Session to maintain cookies throughout the authentication process.
+        - If the endpoint is not secured, the function will return early with is_secured set to False.
     """
     # define the default return object
     auth_session = {
         "endpoint_url": url,  # KF endpoint URL
-        "redirect_url": None,  # KF redirect URL, if applicable
-        "dex_login_url": None,  # Dex login URL (for POST of credentials)
-        "is_secured": None,  # True if KF endpoint is secured
-        "session_cookie": None,  # Resulting session cookies in the form "key1=value1; key2=value2"
+        "redirect_url": "",  # KF redirect URL, if applicable
+        "dex_login_url": "",  # Dex login URL (for POST of credentials)
+        "is_secured": False,  # True if KF endpoint is secured
+        "session_cookie": "",  # Resulting session cookies in the form "key1=value1; key2=value2"
     }
 
     # use a persistent session (for cookies)
