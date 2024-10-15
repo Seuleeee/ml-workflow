@@ -5,6 +5,7 @@ import requests
 from schemas.authentication import AuthenticationSessionSchema
 
 
+# TODO: LDAP 타입도 받을수 있도록 추가 작업 필요.
 def get_istio_auth_session(url: str, username: str, password: str) -> AuthenticationSessionSchema:
     """
     Authenticate against a Dex-secured Istio endpoint and obtain a session cookie.
